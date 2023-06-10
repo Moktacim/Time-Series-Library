@@ -8,7 +8,7 @@ from exp.exp_anomaly_detection import Exp_Anomaly_Detection
 from exp.exp_classification import Exp_Classification
 import random
 import numpy as np
-
+import logging 
 fix_seed = 2021
 random.seed(fix_seed)
 torch.manual_seed(fix_seed)
@@ -92,13 +92,15 @@ parser.add_argument('--p_hidden_dims', type=int, nargs='+', default=[128, 128], 
 parser.add_argument('--p_hidden_layers', type=int, default=2, help='number of hidden layers in projector')
 
 args = parser.parse_args()
+# import IPython; IPython.embed()
 args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
 
 if args.use_gpu and args.use_multi_gpu:
-    args.dvices = args.devices.replace(' ', '')
+    args.devices = args.devices.replace(' ', '')
     device_ids = args.devices.split(',')
     args.device_ids = [int(id_) for id_ in device_ids]
     args.gpu = args.device_ids[0]
+    logging.info(f'training on {args.gpu}')
 
 print('Args in experiment:')
 print(args)

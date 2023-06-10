@@ -35,8 +35,12 @@ See our latest paper [[TimesNet]](https://arxiv.org/abs/2210.02186) for the comp
 
 1. Install Python 3.6, PyTorch 1.7.1. For convenience, execute the following command.
 
-```
+```bash
+conda install pytorch=1.9 torchvision torchaudio -c pytorch -c nvidia 
 pip install -r requirements.txt
+pip install tqdm pandas matplotlib reformer-pytorch sympy IPython 
+pip install sktime==0.4.1
+pip install patool 
 ```
 
 2. Prepare Data. You can obtained the well pre-processed datasets from [[Google Drive]](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2?usp=sharing). Then place the downloaded data under the folder `./dataset`. Here is a summary of supported datasets.
