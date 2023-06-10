@@ -291,6 +291,45 @@ class Dataset_Custom(Dataset):
         return self.scaler.inverse_transform(data)
 
 
+class Kiglis_Hdf5Loader(Dataset_Custom):
+    def __init__(self, root_path, flag='train', size=None,
+                features='S', data_path='ETTh1.csv',
+                target='OT', scale=True, timeenc=0, freq='h', seasonal_patterns=None):
+        self.__read_data__()
+    
+    def __read_data__(self):
+        raise NotImplementedError
+    
+    def __getitem__(self, index):
+        raise NotImplementedError
+    
+    def __len__(self):
+        raise NotImplementedError
+    
+    def inverse_transform(self, data):
+        raise NotImplementedError
+        return super().inverse_transform(data)
+
+
+class Kiglis_MatLoader(Dataset_Custom):
+    def __init__(self, root_path, flag='train', size=None,
+                features='S', data_path='ETTh1.csv',
+                target='OT', scale=True, timeenc=0, freq='h', seasonal_patterns=None):
+        self.__read_data__()
+    
+    def __read_data__(self):
+        raise NotImplementedError
+    
+    def __getitem__(self, index):
+        raise NotImplementedError
+    
+    def __len__(self):
+        raise NotImplementedError
+    
+    def inverse_transform(self, data):
+        raise NotImplementedError
+        return super().inverse_transform(data)
+
 class Dataset_M4(Dataset):
     def __init__(self, root_path, flag='pred', size=None,
                  features='S', data_path='ETTh1.csv',
