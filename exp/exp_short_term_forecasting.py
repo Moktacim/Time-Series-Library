@@ -127,6 +127,7 @@ class Exp_Short_Term_Forecast(Exp_Basic):
         return self.model
 
     def vali(self, train_loader, vali_loader, criterion):
+        
         x, _ = train_loader.dataset.last_insample_window()
         y = vali_loader.dataset.timeseries
         x = torch.tensor(x, dtype=torch.float32).to(self.device)

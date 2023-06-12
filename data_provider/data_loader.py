@@ -11,6 +11,11 @@ from data_provider.m4 import M4Dataset, M4Meta
 from data_provider.uea import subsample, interpolate_missing, Normalizer
 from sktime.utils import load_data
 import warnings
+import h5py
+from data_provider.kiglis_hdf import load_data1
+from utils.timefeatures import time_features
+import warnings, math
+from torch import nn, Tensor
 
 warnings.filterwarnings('ignore')
 
@@ -291,44 +296,213 @@ class Dataset_Custom(Dataset):
         return self.scaler.inverse_transform(data)
 
 
-class Kiglis_Hdf5Loader(Dataset_Custom):
-    def __init__(self, root_path, flag='train', size=None,
-                features='S', data_path='ETTh1.csv',
-                target='OT', scale=True, timeenc=0, freq='h', seasonal_patterns=None):
-        self.__read_data__()
-    
-    def __read_data__(self):
-        raise NotImplementedError
-    
-    def __getitem__(self, index):
-        raise NotImplementedError
-    
-    def __len__(self):
-        raise NotImplementedError
-    
-    def inverse_transform(self, data):
-        raise NotImplementedError
-        return super().inverse_transform(data)
+
+class PositionalEncoding(nn.Module):
+
+    def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000):
+        super().__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        position = torch.arange(max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
+        pe = torch.zeros(max_len, d_model)
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x: Tensor) -> Tensor:
+        """
+        Args:
+            x: Tensor, shape [seq_len, batch_size, embedding_dim]
+        """
+        x = self.pe[:x.shape[0]]
+        return self.dropout(x)
 
 
-class Kiglis_MatLoader(Dataset_Custom):
+
+class Dataset_Hdf5Loader(Dataset):
     def __init__(self, root_path, flag='train', size=None,
-                features='S', data_path='ETTh1.csv',
-                target='OT', scale=True, timeenc=0, freq='h', seasonal_patterns=None):
+                 features='MS', data_path=None,
+                 target='OT', scale=True, timeenc=0, freq='h',
+                 ws=30, seasonal_patterns=None):
+        # remove extra params
+        del target, timeenc, freq 
+        [self.seq_len, self.label_len, self.pred_len] = size
+        self.label_len = 0
+        self.pred_len = 1 
+        # init
+        assert flag in ['train', 'test', 'val']
+        type_map = {'train': 0, 'val': 1, 'test': 2}
+        self.set_type = type_map[flag]
+
+        self.features = features
+        self.scale = scale
+        self.emsize = 12
+        self.dropout = 0.01
+
+        self.root_path = root_path
+        self.data_path = data_path
+        self.__merge_config()
         self.__read_data__()
-    
+
     def __read_data__(self):
-        raise NotImplementedError
-    
+        self.scaler = StandardScaler()
+        # df_rawx = genfromtxt(os.path.join(self.root_path,
+        #                                         'x_data.csv'), delimiter=',') 
+        # df_rawy = genfromtxt(os.path.join(self.root_path,
+        #                                 'y_data.csv'), delimiter=',') 
+        X, Y = load_data1(self.root_path, self.data_path)
+        num_train = int(len(X) * 0.7)
+        num_test = int(len(X) * 0.2)
+        num_vali = len(X) - num_train - num_test
+        border1s = [0, num_train - self.seq_len, len(X) - num_test - self.seq_len]
+        border2s = [num_train, num_train + num_vali, len(X)]
+        border1 = border1s[self.set_type]
+        border2 = border2s[self.set_type]
+
+        if self.scale:
+            train_data = X[border1s[0]:border2s[0]]
+            self.scaler.fit(train_data)
+            data = self.scaler.transform(X)
+        else:
+            data = X
+        gr = Y[border1s[0]:border2s[0]]
+
+        self.data_x = data[border1:border2]
+        self.data_y = gr[border1:border2]
+        self.pos_enc = PositionalEncoding(self.emsize, self.dropout, len(self.data_x))
+        self.data_stamp = self.pos_enc(self.data_x)
+        del X, Y
+
     def __getitem__(self, index):
-        raise NotImplementedError
-    
+        # batch_size, seq_len, sensor_dim
+        s_begin = index
+        s_end = s_begin + self.seq_len
+        r_index = int((s_begin + s_end)/2)
+
+        seq_x = self.data_x[s_begin:s_end]
+        seq_y = np.expand_dims(self.data_y[r_index], axis=1)
+
+        x_enc = self.data_stamp[s_begin:s_end]
+        y_enc = np.expand_dims(self.data_stamp[r_index], axis=1)
+
+        return seq_x, seq_y, x_enc, y_enc
+
     def __len__(self):
-        raise NotImplementedError
-    
+        return len(self.data_x) - self.seq_len  + 1
+
     def inverse_transform(self, data):
-        raise NotImplementedError
-        return super().inverse_transform(data)
+        return self.scaler.inverse_transform(data)
+    
+    def __merge_config(self):
+        if not hasattr(self, 'features'):
+            self.features = 'MS'
+        elif self.features != 'MS':
+            raise ValueError("Prediction task not supported.")
+        
+        if not hasattr(self, 'seq_len'):
+            raise ValueError("Window length is not given.")
+        elif self.seq_len < 1:
+            raise TypeError("Window length must be larger than 1.")
+
+        
+        if not hasattr(self, 'label_len'):
+            raise ValueError("Label length is not given.")
+        elif self.label_len > 1:
+            raise TypeError("labeled length must be 0 for kiglis dataset.")
+
+        if not hasattr(self, 'pred_len'):
+            raise ValueError("Predict length is not given.")
+        elif self.pred_len > 1:
+            raise TypeError("labeled length must be 1 for kiglis dataset.")
+                            
+
+    
+class Dataset_MatLoader(Dataset):
+    def __init__(self, root_path, flag='train', size=None,
+                 features='S', data_path=None,
+                 target='OT', scale=True, timeenc=0, freq='h'):
+        # size [seq_len, label_len, pred_len]
+        # info
+        if size == None:
+            self.seq_len = 24 * 4 * 4
+            self.label_len = 24 * 4
+            self.pred_len = 24 * 4
+        else:
+            self.seq_len = size[0]
+            self.label_len = size[1]
+            self.pred_len = size[2]
+        # init
+        assert flag in ['train', 'test', 'val']
+        type_map = {'train': 0, 'val': 1, 'test': 2}
+        self.set_type = type_map[flag]
+
+        self.features = features
+        self.scale = scale
+        self.timeenc = timeenc
+        self.freq = freq
+
+        self.root_path = root_path
+        self.data_path = data_path
+        self.__read_data__()
+
+    def __read_data__(self):
+        self.scaler = StandardScaler()
+        from numpy import genfromtxt
+        df_rawx = genfromtxt(os.path.join(self.root_path,
+                                                'x_data.csv'), delimiter=',') 
+        df_rawy = genfromtxt(os.path.join(self.root_path,
+                                        'y_data.csv'), delimiter=',') 
+        '''
+        df_raw.columns: ['date', ...(other features), target feature]
+        '''
+        # cols = list(df_rawx.columns)
+        # cols.remove(self.target)
+        # cols.remove('date')
+        # df_rawx = df_rawx[['date'] + cols + [self.target]]
+        # print(cols)
+        num_train = int(len(df_rawx) * 0.7)
+        num_test = int(len(df_rawx) * 0.2)
+        num_vali = len(df_rawx) - num_train - num_test
+        border1s = [0, num_train - self.seq_len, len(df_rawx) - num_test - self.seq_len]
+        border2s = [num_train, num_train + num_vali, len(df_rawx)]
+        border1 = border1s[self.set_type]
+        border2 = border2s[self.set_type]
+
+        if self.features == 'M' or self.features == 'MS':
+            cols_data = df_rawx.columns[1:]
+            df_data = df_rawx[cols_data]
+        elif self.features == 'S':
+            df_data = df_rawx
+
+        if self.scale:
+            train_data = df_data[border1s[0]:border2s[0]]
+            self.scaler.fit(train_data)
+            data = self.scaler.transform(df_data)
+        else:
+            data = df_data
+
+        self.data_x = data[border1:border2]
+        self.data_y = data[border1:border2]
+
+    def __getitem__(self, index):
+        s_begin = index
+        s_end = s_begin + self.seq_len
+        r_begin = s_end - self.label_len
+        r_end = r_begin + self.label_len + self.pred_len
+
+        seq_x = self.data_x[s_begin:s_end]
+        seq_y = self.data_y[r_begin:r_end]
+
+        return seq_x, seq_y
+
+    def __len__(self):
+        return len(self.data_x) - self.seq_len - self.pred_len + 1
+
+    def inverse_transform(self, data):
+        return self.scaler.inverse_transform(data)
+    
+
 
 class Dataset_M4(Dataset):
     def __init__(self, root_path, flag='pred', size=None,
