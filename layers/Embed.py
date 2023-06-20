@@ -63,6 +63,7 @@ class FixedEmbedding(nn.Module):
 
 
 class TemporalEmbedding(nn.Module):
+    # TODO update to current dataset 
     def __init__(self, d_model, embed_type='fixed', freq='h'):
         super(TemporalEmbedding, self).__init__()
 
