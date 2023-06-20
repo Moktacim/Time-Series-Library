@@ -16,6 +16,7 @@ from data_provider.kiglis_hdf import load_data1
 from utils.timefeatures import time_features
 import warnings, math
 from torch import nn, Tensor
+import logging
 
 warnings.filterwarnings('ignore')
 
@@ -337,7 +338,7 @@ class Dataset_Hdf5Loader(Dataset):
 
         self.features = features
         self.scale = scale
-        self.emsize = 12
+        self.emsize = 4
         self.dropout = 0.01
 
         self.root_path = root_path
@@ -347,16 +348,18 @@ class Dataset_Hdf5Loader(Dataset):
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        # df_rawx = genfromtxt(os.path.join(self.root_path,
-        #                                         'x_data.csv'), delimiter=',') 
-        # df_rawy = genfromtxt(os.path.join(self.root_path,
-        #                                 'y_data.csv'), delimiter=',') 
         X, Y = load_data1(self.root_path, self.data_path)
-        num_train = int(len(X) * 0.7)
-        num_test = int(len(X) * 0.2)
-        num_vali = len(X) - num_train - num_test
-        border1s = [0, num_train - self.seq_len, len(X) - num_test - self.seq_len]
-        border2s = [num_train, num_train + num_vali, len(X)]
+        if X.shape != Y.shape:
+            raise ValueError('shape of x and y must be identical.')
+        possible_id = len(X) - self.seq_len
+        num_train = int(possible_id * 0.7)
+        num_test = int(possible_id * 0.2)
+        num_vali = possible_id - num_train - num_test 
+        logging.info(f"splitting starts... train: {num_train}, vali: {num_vali}, test: {num_test}")
+
+        border1s = [0, num_train, num_train + num_vali -1]
+        border2s = [num_train-1, num_train + num_vali -1,  possible_id]
+
         border1 = border1s[self.set_type]
         border2 = border2s[self.set_type]
 
@@ -366,10 +369,12 @@ class Dataset_Hdf5Loader(Dataset):
             data = self.scaler.transform(X)
         else:
             data = X
-        gr = Y[border1s[0]:border2s[0]]
+        gr = Y
 
         self.data_x = data[border1:border2]
         self.data_y = gr[border1:border2]
+        # debug only 
+        print(self.data_x.shape, self.data_y.shape)
         self.pos_enc = PositionalEncoding(self.emsize, self.dropout, len(self.data_x))
         self.data_stamp = self.pos_enc(self.data_x)
         del X, Y
@@ -380,11 +385,11 @@ class Dataset_Hdf5Loader(Dataset):
         s_end = s_begin + self.seq_len
         r_index = int((s_begin + s_end)/2)
 
-        seq_x = self.data_x[s_begin:s_end]
-        seq_y = np.expand_dims(self.data_y[r_index], axis=1)
+        seq_x = self.data_x[s_begin:s_end, :]
+        seq_y = np.expand_dims(self.data_y[r_index, :], axis=0)
 
-        x_enc = self.data_stamp[s_begin:s_end]
-        y_enc = np.expand_dims(self.data_stamp[r_index], axis=1)
+        x_enc = self.data_stamp[s_begin:s_end, :]
+        y_enc = np.expand_dims(self.data_stamp[r_index, :], axis=0)
 
         return seq_x, seq_y, x_enc, y_enc
 
@@ -397,7 +402,7 @@ class Dataset_Hdf5Loader(Dataset):
     def __merge_config(self):
         if not hasattr(self, 'features'):
             self.features = 'MS'
-        elif self.features != 'MS':
+        elif self.features != 'MS': #temporary 
             raise ValueError("Prediction task not supported.")
         
         if not hasattr(self, 'seq_len'):
@@ -535,6 +540,7 @@ class Dataset_M4(Dataset):
             dataset = M4Dataset.load(training=True, dataset_file=self.root_path)
         else:
             dataset = M4Dataset.load(training=False, dataset_file=self.root_path)
+            # TODO understand 
         training_values = np.array(
             [v[~np.isnan(v)] for v in
              dataset.values[dataset.groups == self.seasonal_patterns]])  # split different frequencies
@@ -575,10 +581,11 @@ class Dataset_M4(Dataset):
 
         :return: Last insample window of all timeseries. Shape "timeseries, insample size"
         """
+        # TODO understand 
         insample = np.zeros((len(self.timeseries), self.seq_len))
         insample_mask = np.zeros((len(self.timeseries), self.seq_len))
         for i, ts in enumerate(self.timeseries):
-            ts_last_window = ts[-self.seq_len:]
+            ts_last_window = ts[-self.seq_len:] # last samples in training set 
             insample[i, -len(ts):] = ts_last_window
             insample_mask[i, -len(ts):] = 1.0
         return insample, insample_mask

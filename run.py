@@ -68,7 +68,7 @@ parser.add_argument('--dropout', type=float, default=0.1, help='dropout')
 parser.add_argument('--embed', type=str, default='timeF',
                     help='time features encoding, options:[timeF, fixed, learned]')
 parser.add_argument('--activation', type=str, default='gelu', help='activation')
-parser.add_argument('--output_attention', action='store_true', help='whether to output attention in ecoder')
+parser.add_argument('--output_attention', action='store_true', help='whether to output attention in encoder')
 
 # optimization
 parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')

@@ -40,7 +40,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         total_loss = []
         self.model.eval()
         with torch.no_grad():
-            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(vali_loader):
+            for i, (iii, batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(vali_loader):
+                print(batch_x.shape, batch_x_mark.shape, batch_y.shape, batch_y_mark.shape)
                 batch_x = batch_x.float().to(self.device)
                 batch_y = batch_y.float()
 

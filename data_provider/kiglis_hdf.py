@@ -63,7 +63,6 @@ def load_data1(root_path: str, data_path: str) -> np.array:
 	with h5py.File(os.path.join(root_path,
 									data_path), 'r') as f:
 		for k in list(f.keys()):
-			print(k)
 			datx.append(np.array(f[k]['mx_flt']['input']['signals']['0']).squeeze())
 			daty.append(np.array(f[k]['mx_flt']['output']['signals']['0']).squeeze())
 
