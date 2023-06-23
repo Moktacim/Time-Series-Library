@@ -5,6 +5,8 @@ import glob
 import re
 import torch
 from torch.utils.data import Dataset, DataLoader
+import sys
+sys.path.insert(0, os.getcwd())
 from sklearn.preprocessing import StandardScaler
 from utils.timefeatures import time_features
 from data_provider.m4 import M4Dataset, M4Meta
@@ -17,9 +19,9 @@ from utils.timefeatures import time_features
 import warnings, math
 from torch import nn, Tensor
 import logging
+from utils.data_representation import visual_pos_enc, save_visualization
 
 warnings.filterwarnings('ignore')
-
 
 class Dataset_ETT_hour(Dataset):
     def __init__(self, root_path, flag='train', size=None,
@@ -49,6 +51,18 @@ class Dataset_ETT_hour(Dataset):
         self.root_path = root_path
         self.data_path = data_path
         self.__read_data__()
+        self.__save_visual__()
+
+    def __save_visual__(self):
+        save = 'plots'
+        try:
+            # import shutil 
+            # shutil.rmtree(save)
+            os.makedirs(save)
+        except:
+            pass
+        save_visualization(self)
+        visual_pos_enc(self)
 
     def __read_data__(self):
         self.scaler = StandardScaler()
@@ -75,6 +89,7 @@ class Dataset_ETT_hour(Dataset):
 
         df_stamp = df_raw[['date']][border1:border2]
         df_stamp['date'] = pd.to_datetime(df_stamp.date)
+        
         if self.timeenc == 0:
             df_stamp['month'] = df_stamp.date.apply(lambda row: row.month, 1)
             df_stamp['day'] = df_stamp.date.apply(lambda row: row.day, 1)
@@ -137,6 +152,18 @@ class Dataset_ETT_minute(Dataset):
         self.root_path = root_path
         self.data_path = data_path
         self.__read_data__()
+        self.__save_visual__()
+
+    def __save_visual__(self):
+        save = 'plots'
+        try:
+            # import shutil 
+            # shutil.rmtree(save)
+            os.makedirs(save)
+        except:
+            pass
+        save_visualization(self)
+        visual_pos_enc(self)
 
     def __read_data__(self):
         self.scaler = StandardScaler()
@@ -227,6 +254,18 @@ class Dataset_Custom(Dataset):
         self.root_path = root_path
         self.data_path = data_path
         self.__read_data__()
+        self.__save_visual__()
+
+    def __save_visual__(self):
+        save = 'plots'
+        try:
+            # import shutil 
+            # shutil.rmtree(save)
+            os.makedirs(save)
+        except:
+            pass
+        save_visualization(self)
+        visual_pos_enc(self)
 
     def __read_data__(self):
         self.scaler = StandardScaler()
@@ -450,6 +489,18 @@ class Dataset_MatLoader(Dataset):
         self.root_path = root_path
         self.data_path = data_path
         self.__read_data__()
+        self.__save_visual__()
+
+    def __save_visual__(self):
+        save = 'plots'
+        try:
+            # import shutil 
+            # shutil.rmtree(save)
+            os.makedirs(save)
+        except:
+            pass
+        save_visualization(self)
+        visual_pos_enc(self)
 
     def __read_data__(self):
         self.scaler = StandardScaler()
@@ -533,6 +584,18 @@ class Dataset_M4(Dataset):
         self.flag = flag
 
         self.__read_data__()
+        self.__save_visual__()
+
+    def __save_visual__(self):
+        save = 'plots'
+        try:
+            # import shutil 
+            # shutil.rmtree(save)
+            os.makedirs(save)
+        except:
+            pass
+        save_visualization(self)
+        visual_pos_enc(self)
 
     def __read_data__(self):
         # M4Dataset.initialize()
@@ -540,7 +603,6 @@ class Dataset_M4(Dataset):
             dataset = M4Dataset.load(training=True, dataset_file=self.root_path)
         else:
             dataset = M4Dataset.load(training=False, dataset_file=self.root_path)
-            # TODO understand 
         training_values = np.array(
             [v[~np.isnan(v)] for v in
              dataset.values[dataset.groups == self.seasonal_patterns]])  # split different frequencies
@@ -933,3 +995,39 @@ class UEAloader(Dataset):
 
     def __len__(self):
         return len(self.all_IDs)
+
+
+if __name__ == "__main__":
+    save = 'plots'
+    try:
+        import shutil 
+        shutil.rmtree(save)
+        os.makedirs(save)
+    except:
+        pass
+    
+    root_path = './dataset/illness/'
+    data_path = 'national_illness.csv'
+    flag = 'train'
+    seq_len, label_len, pred_len = 36, 18, 24
+    features = 'M'
+    target = 'OT'
+    timeenc = 1 
+    freq = 'h'
+    seasonal_patterns = 'Monthly'
+
+    dataset = Dataset_Custom(
+    root_path=root_path,
+    data_path=data_path,
+    flag=flag,
+    size=[seq_len, label_len, pred_len],
+    features=features,
+    target=target,
+    timeenc=timeenc,
+    freq=freq,
+    seasonal_patterns=seasonal_patterns
+)
+    visual_pos_enc(dataset)
+    save_visualization(dataset)
+    print(len(dataset))
+

@@ -38,6 +38,7 @@ See our latest paper [[TimesNet]](https://arxiv.org/abs/2210.02186) for the comp
 ```bash
 conda install pytorch=1.9 torchvision torchaudio -c pytorch -c nvidia 
 pip install -r requirements.txt
+pip install matplotlib, reformer_pytorch==1.4.4, requests==2.27.1, sktime==0.4.1, 
 pip install tqdm pandas matplotlib reformer-pytorch sympy IPython 
 pip install sktime==0.4.1
 pip install patool 
