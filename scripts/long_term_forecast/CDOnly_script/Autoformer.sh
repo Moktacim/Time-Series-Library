@@ -6,7 +6,8 @@ model_name=Autoformer
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
-x
+  --root_path ./dataset/Kiglis_hdf5/CDonly/ \
+  --data_path training_data_3km_CDonly_Cband.hdf5 \
   --model $model_name \
   --data Kiglis_Hdf5 \
   --features MS \
