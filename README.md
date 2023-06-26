@@ -45,6 +45,10 @@ pip install patool
 ```
 
 2. Prepare Data. You can obtained the well pre-processed datasets from [[Google Drive]](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2?usp=sharing). Then place the downloaded data under the folder `./dataset`. Here is a summary of supported datasets.
+3. Visualize Data.
+```bash 
+bash plots/collect_plots.sh
+```
 
 <p align="center">
 <img src=".\pic\dataset.png" height = "200" alt="" align=center />
@@ -64,6 +68,8 @@ bash ./scripts/anomaly_detection/PSM/TimesNet.sh
 # classification
 bash ./scripts/classification/TimesNet.sh
 ```
+
+
 
 4. Develop your own model.
 
