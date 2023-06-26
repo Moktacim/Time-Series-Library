@@ -5,8 +5,8 @@ model_name=DLinear
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
-  --root_path ./dataset/Kiglis_hdf5/CD \
-  --data_path training_data_5km.hdf5 \
+  --root_path ./dataset/Kiglis_hdf5/CDonly/ \
+  --data_path training_data_3km_CDonly_Cband.hdf5 \
   --model_id cdonly_30_1 \
   --model DLinear \
   --data Kiglis_Hdf5 \
