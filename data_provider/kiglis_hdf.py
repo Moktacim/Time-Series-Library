@@ -48,9 +48,8 @@ def log_loaded_dataset(dataset, format, name):
             
 
 def load_data1(root_path: str, data_path: str) -> np.array:
-	
-    """
-	load adopted from 
+	"""
+	load adopted from \
 
 	Args:
 		root_path (_type_): _description_
@@ -58,30 +57,14 @@ def load_data1(root_path: str, data_path: str) -> np.array:
 	
 	Refs:
 		https://stackoverflow.com/questions/28170623/how-to-read-hdf5-files-in-python
-	"""
-    X, Y = [], []
-
-    with h5py.File(os.path.join(root_path,
-                                 data_path), 'r') as f:
-        group = f['mx_flt']
-        X = np.array(group['input/signals/0']).squeeze()
-        Y = np.array(group['output/signals/0']).squeeze()
-    print(len(X),len(Y))
-    return X, Y
-
-
 	
-	# datx, daty = [], []
-	# with h5py.File(os.path.join(root_path,
-	# 								data_path), 'r') as f:
-        
-               
-	# 	for k in list(f.keys()):
-	# 		datx.append(np.array(f[k]['mx_flt']['input']['signals']['0']).squeeze())
-	# 		daty.append(np.array(f[k]['mx_flt']['output']['signals']['0']).squeeze())
-        
-    
-	# X, Y = np.asarray(datx).transpose(), np.asarray(daty).transpose()
-	# return X, Y
+	"""
+	datx, daty = [], []
+	with h5py.File(os.path.join(root_path,
+									data_path), 'r') as f:
+		for k in list(f.keys()):
+			datx.append(np.array(f[k]['mx_flt']['input']['signals']['0']).squeeze())
+			daty.append(np.array(f[k]['mx_flt']['output']['signals']['0']).squeeze())
 
-   
+	X, Y = np.asarray(datx).transpose(), np.asarray(daty).transpose()
+	return X, Y

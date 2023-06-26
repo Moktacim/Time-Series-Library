@@ -396,6 +396,7 @@ class Dataset_Hdf5Loader(Dataset):
         num_vali = possible_id - num_train - num_test 
         logging.info(f"splitting starts... train: {num_train}, vali: {num_vali}, test: {num_test}")
 
+        ######### 
         border1s = [0, num_train, num_train + num_vali -1]
         border2s = [num_train-1, num_train + num_vali -1,  possible_id]
 
