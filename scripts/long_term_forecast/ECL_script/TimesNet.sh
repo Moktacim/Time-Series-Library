@@ -5,8 +5,8 @@ model_name=TimesNet
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
-  --root_path ./dataset/electricity/ \
-  --data_path electricity.csv \
+  --root_path ./dataset/Kiglis_hdf5/CD \
+  --data_path training_data_5km.hdf5 \
   --model_id ECL_96_96 \
   --model $model_name \
   --data custom \
