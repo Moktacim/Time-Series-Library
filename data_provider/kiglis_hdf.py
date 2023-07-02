@@ -63,11 +63,12 @@ def load_data1(root_path: str, data_path: str) -> np.array:
     # with h5py.File(os.path.join(root_path,
     # 								data_path), 'r') as f:
     # TODO 
-    with h5py.File(os.path.join(root_path,
-    								data_path), 'r') as f:
-        for k in list(f.keys()):
-            datx.append(np.array(f[k]['mx_flt']['input']['signals']['0']).squeeze())
-            daty.append(np.array(f[k]['mx_flt']['output']['signals']['0']).squeeze())
+    with h5py.File(("/pfs/work7/workspace/scratch/rn3983-sahu/Time-Series-Library/dataset/Kiglis_hdf5/CD/training_data_11km.hdf5"), 'r') as f:
+        # for k in list(f.keys()):
+        #     datx.append(np.array(f[k]['mx_flt']['input']['signals']['0']).squeeze())
+        #     daty.append(np.array(f[k]['mx_flt']['output']['signals']['0']).squeeze())
+        datx = f['mx_flt']['input']['signals']['0'][:].squeeze()
+        daty = f['mx_flt']['output']['signals']['0'][:].squeeze()
 
     X, Y = np.asarray(datx).transpose(), np.asarray(daty).transpose()
     return X, Y
