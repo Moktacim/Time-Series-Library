@@ -63,11 +63,13 @@ def load_data1(root_path: str, data_path: str) -> np.array:
     # with h5py.File(os.path.join(root_path,
     # 								data_path), 'r') as f:
     # TODO 
+    # for k in list(f.keys()):
+        #     datx.append(np.array(f[k]['mx_flt']['input']['signals']['0']).squeeze())
+        #     daty.append(np.array(f[k]['mx_flt']['output']['signals']['0']).squeeze())
     with h5py.File(os.path.join(root_path,
-    								data_path), 'r') as f:
-        for k in list(f.keys()):
-            datx.append(np.array(f[k]['mx_flt']['input']['signals']['0']).squeeze())
-            daty.append(np.array(f[k]['mx_flt']['output']['signals']['0']).squeeze())
+     								data_path), 'r') as f:
+        datx = f['mx_flt']['input']['signals']['0'][:].squeeze()
+        daty = f['mx_flt']['output']['signals']['0'][:].squeeze()
 
     X, Y = np.asarray(datx).transpose(), np.asarray(daty).transpose()
     return X, Y

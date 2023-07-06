@@ -1,3 +1,10 @@
+if [ ! -d "./logs" ]; then
+    mkdir ./logs
+fi
+
+if [ ! -d "./logs/LongForecasting" ]; then
+    mkdir ./logs/LongForecasting
+fi
 model_name=LightTS
 
 python -u run.py \
@@ -10,13 +17,14 @@ python -u run.py \
   --data Kiglis_Hdf5 \
   --features MS \
   --seq_len 96 \
-  --label_len 48 \
-  --pred_len 96 \
+  --label_len 0 \
+  --pred_len 1 \
   --e_layers 2 \
   --d_layers 1 \
   --factor 3 \
-  --enc_in 30 \
-  --dec_in 30 \
-  --c_out 30 \
+  --enc_in 7 \
+  --dec_in 7 \
+  --c_out 7 \
+  --gpu 1 \
   --des 'Exp' \
   --itr 1

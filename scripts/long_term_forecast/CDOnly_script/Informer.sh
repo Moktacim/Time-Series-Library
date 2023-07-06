@@ -1,5 +1,3 @@
-# export CUDA_VISIBLE_DEVICES=1
-# TODO 
 if [ ! -d "./logs" ]; then
     mkdir ./logs
 fi
@@ -7,16 +5,17 @@ fi
 if [ ! -d "./logs/LongForecasting" ]; then
     mkdir ./logs/LongForecasting
 fi
-model_name=Autoformer
+
+model_name=Informer
 
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
   --root_path ./dataset/Kiglis_hdf5/CD \
   --data_path training_data_5km.hdf5 \
+  --model $model_name \
   --model_id cdonly_30_1 \
   --data Kiglis_Hdf5 \
-  --model $model_name \
   --features MS \
   --seq_len 96 \
   --label_len 0 \
@@ -27,6 +26,5 @@ python -u run.py \
   --enc_in 7 \
   --dec_in 7 \
   --c_out 7 \
-  --gpu 0 \
   --des 'Exp' \
   --itr 1
