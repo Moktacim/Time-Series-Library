@@ -6,6 +6,8 @@ if [ ! -d "./logs/LongForecasting" ]; then
     mkdir ./logs/LongForecasting
 fi
 
+CUDA_LAUNCH_BLOCKING=1
+
 model_name=Fedformer
 
 python -u run.py \
@@ -23,8 +25,8 @@ python -u run.py \
   --e_layers 2 \
   --d_layers 1 \
   --factor 3 \
-  --enc_in 7 \
-  --dec_in 7 \
-  --c_out 7 \
+  --enc_in 30 \
+  --dec_in 30 \
+  --c_out 30 \
   --des 'Exp' \
   --itr 1

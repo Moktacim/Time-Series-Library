@@ -15,8 +15,8 @@ python -u run.py \
   --root_path ./dataset/Kiglis_hdf5/CD \
   --data_path training_data_5km.hdf5 \
   --model_id cdonly_30_1 \
+  --model Autoformer \
   --data Kiglis_Hdf5 \
-  --model $model_name \
   --features MS \
   --seq_len 96 \
   --label_len 0 \
@@ -24,9 +24,13 @@ python -u run.py \
   --e_layers 2 \
   --d_layers 1 \
   --factor 3 \
-  --enc_in 7 \
-  --dec_in 7 \
-  --c_out 7 \
-  --gpu 0 \
+  --enc_in 30 \
+  --dec_in 30 \
+  --c_out 30 \
+  --batch_size 16 \
+  --d_model 512 \
   --des 'Exp' \
-  --itr 1
+  --itr 1 \
+  --gpu 0 \
+  --learning_rate 0.001 \
+  --loss 'SMAPE'

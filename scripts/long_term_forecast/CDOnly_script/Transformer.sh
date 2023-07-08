@@ -22,9 +22,9 @@ python -u run.py \
   --e_layers 2 \
   --d_layers 1 \
   --factor 3 \
-  --enc_in 7 \
-  --dec_in 7 \
-  --c_out 7 \
+  --enc_in 30 \
+  --dec_in 30 \
+  --c_out 30 \
   --gpu 0 \
   --des 'Exp' \
   --itr 1
