@@ -14,6 +14,7 @@ from data_provider.uea import subsample, interpolate_missing, Normalizer
 from sktime.utils import load_data
 import warnings
 import h5py
+import random
 from data_provider.kiglis_hdf import load_data1
 from utils.timefeatures import time_features
 import warnings, math
@@ -362,11 +363,10 @@ class PositionalEncoding(nn.Module):
 
 class Dataset_Hdf5Loader(Dataset):
     def __init__(self, root_path, flag='train', size=None,
-                 features='MS', data_path=None,
-                 target='OT', scale=True, timeenc=0, freq='h',
-                 ws=30, seasonal_patterns=None):
+                 features='MS', data_path=None, subset_size=None, target='OT',
+                 scale=True, ws=30, timeenc=0, freq='h', seasonal_patterns=None):
         # remove extra params
-        del target, timeenc, freq 
+        del features, ws, seasonal_patterns, timeenc, freq 
         [self.seq_len, self.label_len, self.pred_len] = size
         self.label_len = 0
         self.pred_len = 1 
@@ -374,37 +374,32 @@ class Dataset_Hdf5Loader(Dataset):
         assert flag in ['train', 'test', 'val']
         type_map = {'train': 0, 'val': 1, 'test': 2}
         self.set_type = type_map[flag]
-
-        self.features = features
         self.scale = scale
         self.emsize = 4
         self.dropout = 0.01
 
         self.root_path = root_path
         self.data_path = data_path
+        self.subset_size = subset_size
         self.__merge_config()
         self.__read_data__()
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        X, Y = load_data1(self.root_path, self.data_path)
+        X, Y = load_data1(self.root_path, self.data_path, self.subset_size)
         if X.shape != Y.shape:
             raise ValueError('shape of x and y must be identical.')
+                
+        #### Modify the subset size as desired ####
         possible_id = len(X) - self.seq_len
-        num_train = int(possible_id * 0.7)
-        num_test = int(possible_id * 0.2)
-        num_vali = possible_id - num_train - num_test 
-        logging.info(f"splitting starts... train: {num_train}, vali: {num_vali}, test: {num_test}")
-
-        ######### 
-        border1s = [0, num_train, num_train + num_vali -1]
-        border2s = [num_train-1, num_train + num_vali -1,  possible_id]
-
-        border1 = border1s[self.set_type]
-        border2 = border2s[self.set_type]
+        num_samples = int(possible_id * 0.7)
+        # Randomly sample subset indices
+        random_indices = random.sample(range(possible_id), num_samples)
+        border1 = min(random_indices)
+        border2 = max(random_indices) + self.seq_len
 
         if self.scale:
-            train_data = X[border1s[0]:border2s[0]]
+            train_data = X[border1:border2]
             self.scaler.fit(train_data)
             data = self.scaler.transform(X)
         else:
@@ -413,11 +408,37 @@ class Dataset_Hdf5Loader(Dataset):
 
         self.data_x = data[border1:border2]
         self.data_y = gr[border1:border2]
-        # debug only 
-        print(self.data_x.shape, self.data_y.shape)
-        self.pos_enc = PositionalEncoding(self.emsize, self.dropout, len(self.data_x))
+        self.pos_enc = PositionalEncoding(self.emsize, self.dropout,                       len(self.data_x))
         self.data_stamp = self.pos_enc(self.data_x)
         del X, Y
+        
+#        [ num_train = int(possible_id * 0.7)
+#         num_test = int(possible_id * 0.2)
+#         num_vali = possible_id - num_train - num_test 
+#         logging.info(f"splitting starts... train: {num_train}, vali: {num_vali}, test: {num_test}")
+
+#         ######### 
+#         border1s = [0, num_train, num_train + num_vali -1]
+#         border2s = [num_train-1, num_train + num_vali -1,  possible_id]
+
+#         border1 = border1s[self.set_type]
+#         border2 = border2s[self.set_type]
+
+#         if self.scale:
+#             train_data = X[border1s[0]:border2s[0]]
+#             self.scaler.fit(train_data)
+#             data = self.scaler.transform(X)
+#         else:
+#             data = X
+#         gr = Y
+
+#         self.data_x = data[border1:border2]
+#         self.data_y = gr[border1:border2]
+#         # debug only 
+#         print(self.data_x.shape, self.data_y.shape)
+#         self.pos_enc = PositionalEncoding(self.emsize, self.dropout, len(self.data_x))
+#         self.data_stamp = self.pos_enc(self.data_x)
+#         del X, Y   ]
 
     def __getitem__(self, index):
         # batch_size, seq_len, sensor_dim

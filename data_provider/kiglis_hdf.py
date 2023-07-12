@@ -1,3 +1,4 @@
+import random
 import h5py, os
 import numpy as np 
 import logging 
@@ -47,7 +48,7 @@ def log_loaded_dataset(dataset, format, name):
             logging.info(f"  num edge classes: {len(torch.unique(labels))}")
             
 
-def load_data1(root_path: str, data_path: str) -> np.array:
+def load_data1(root_path: str, data_path: str, subset_size:int) -> np.array:
     """
     load adopted from \
 
@@ -70,6 +71,12 @@ def load_data1(root_path: str, data_path: str) -> np.array:
         datx = f['mx_flt']['input']['signals']['0'][:].squeeze()
         daty = f['mx_flt']['output']['signals']['0'][:].squeeze()
 
-    X, Y = np.asarray(datx).transpose(), np.asarray(daty).transpose()
+    # Randomly sample a subset of indices
+    indices = np.random.choice(len(datx), size=subset_size, replace=False)
+
+    # Get the subset of data based on the sampled indices
+    X = np.asarray(datx)[indices].transpose()
+    Y = np.asarray(daty)[indices].transpose()
+    
     return X, Y
 

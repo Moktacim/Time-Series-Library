@@ -26,6 +26,7 @@ parser.add_argument('--model', type=str, required=True, default='Autoformer',
 
 # data loader 
 parser.add_argument('--data', type=str, required=True, default='ETTm1', help='dataset type')
+parser.add_argument('--subset_size', type=int, default=None, help='size of the subset for training')
 parser.add_argument('--root_path', type=str, default='./data/ETT/', help='root path of the data file')
 parser.add_argument('--data_path', type=str, default='ETTh1.csv', help='data file')
 parser.add_argument('--features', type=str, default='MS',

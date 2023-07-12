@@ -1,3 +1,4 @@
+import random
 from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_M4, PSMSegLoader, \
     MSLSegLoader, SMAPSegLoader, SMDSegLoader, SWATSegLoader, UEAloader, \
     Dataset_Hdf5Loader, Dataset_MatLoader
@@ -91,5 +92,6 @@ def data_provider(args, flag):
             batch_size=batch_size,
             shuffle=shuffle_flag,
             num_workers=args.num_workers,
+            subset_size = args.subset_size,
             drop_last=drop_last)
         return data_set, data_loader
