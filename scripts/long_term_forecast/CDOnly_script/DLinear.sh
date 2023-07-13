@@ -12,10 +12,10 @@ model_name=DLinear
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
-  --root_path ./dataset/Kiglis_hdf5/CD \
-  --data_path training_data_5km.hdf5 \
+  --root_path ./dataset/Kiglis_hdf5/CDonly/ \
+  --data_path training_data_3km_CDonly_Cband.hdf5 \
   --model_id cdonly_30_1 \
-  --model DLinear \
+  --model $model_name \
   --data Kiglis_Hdf5 \
   --features MS \
   --seq_len 96 \
@@ -32,4 +32,5 @@ python -u run.py \
   --des 'Exp' \
   --itr 1 \
   --learning_rate 0.001 \
-  --loss 'SMAPE'
+  #--loss 'SMAPE'
+  #

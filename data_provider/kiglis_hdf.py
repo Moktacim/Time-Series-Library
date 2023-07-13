@@ -51,9 +51,10 @@ def log_loaded_dataset(dataset, format, name):
             
 
 def load_data1(root_path: str, data_path: str) -> np.array:
-    """
-    load adopted from \
+	"""
+	load adopted from \
 
+<<<<<<< HEAD
     Args:
         root_path (_type_): _description_
         data_path (_type_): _description_
@@ -98,4 +99,4 @@ def load_data1(root_path: str, data_path: str) -> np.array:
 
   
 
- 
+

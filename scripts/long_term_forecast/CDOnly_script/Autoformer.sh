@@ -12,6 +12,7 @@ model_name=Autoformer
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
+<<<<<<< HEAD
   --root_path ./dataset/Kiglis_hdf5/CD \
   --data_path training_data_5km.hdf5 \
   --model_id cdonly_30_1 \
