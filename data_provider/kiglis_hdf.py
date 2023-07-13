@@ -3,6 +3,8 @@ import h5py, os
 import numpy as np 
 import logging 
 import torch  
+from typing import Tuple
+
 
 def logging_data(data: np.array) -> None:
 	
@@ -48,35 +50,52 @@ def log_loaded_dataset(dataset, format, name):
             logging.info(f"  num edge classes: {len(torch.unique(labels))}")
             
 
-def load_data1(root_path: str, data_path: str, subset_size:int) -> np.array:
+def load_data1(root_path: str, data_path: str) -> np.array:
     """
     load adopted from \
 
     Args:
         root_path (_type_): _description_
         data_path (_type_): _description_
-
+        subset_size (int): Size of the subset to sample. 
+    Returns:
+        Tuple[np.array, np.array]: A tuple containing the input and output data arrays.
     Refs:
         https://stackoverflow.com/questions/28170623/how-to-read-hdf5-files-in-python
 
     """
     datx, daty = [], []
-    # with h5py.File(os.path.join(root_path,
-    # 								data_path), 'r') as f: 
-    #     for k in list(f.keys()):
-    #         datx.append(np.array(f[k]['mx_flt']['input']['signals']['0']).squeeze())
-    #         daty.append(np.array(f[k]['mx_flt']['output']['signals']['0']).squeeze())
-    with h5py.File(os.path.join(root_path,
-     								data_path), 'r') as f:
+    with h5py.File(os.path.join(root_path, data_path), 'r') as f:
         datx = f['mx_flt']['input']['signals']['0'][:].squeeze()
         daty = f['mx_flt']['output']['signals']['0'][:].squeeze()
-
-    # Randomly sample a subset of indices
-    indices = np.random.choice(len(datx), size=subset_size, replace=False)
-
-    # Get the subset of data based on the sampled indices
-    X = np.asarray(datx)[indices].transpose()
-    Y = np.asarray(daty)[indices].transpose()
+        
+    print("datx.shape[1]:", datx.shape[1])
+    subset_size = int(datx.shape[1] * 0.1)  # subset size is 10 percent of the whole data
+    print("subset Size:", subset_size)
+    # print("datx shape:", datx.shape)
+    # print("daty shape:", daty.shape)
+    
+    X = np.asarray(datx[:,: subset_size]).transpose()  # Select the subset of the input data
+    Y = np.asarray(daty[:,:subset_size]).transpose()  # Select the subset of the output data
+    # print("X shape:", X.shape)
+    # print("Y shape:", Y.shape)
     
     return X, Y
 
+#     datx, daty = [], []
+#     # with h5py.File(os.path.join(root_path,
+#     # 								data_path), 'r') as f:
+#     # TODO 
+#     with h5py.File(("/pfs/work7/workspace/scratch/rn3983-sahu/Time-Series-Library/dataset/Kiglis_hdf5/CD/training_data_11km.hdf5"), 'r') as f:
+#         # for k in list(f.keys()):
+#         #     datx.append(np.array(f[k]['mx_flt']['input']['signals']['0']).squeeze())
+#         #     daty.append(np.array(f[k]['mx_flt']['output']['signals']['0']).squeeze())
+#         datx = f['mx_flt']['input']['signals']['0'][:].squeeze()
+#         daty = f['mx_flt']['output']['signals']['0'][:].squeeze()
+
+#     X, Y = np.asarray(datx).transpose(), np.asarray(daty).transpose()
+#     return X, Y
+
+  
+
+ 
