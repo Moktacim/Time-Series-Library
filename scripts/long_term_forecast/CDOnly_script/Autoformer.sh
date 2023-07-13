@@ -27,10 +27,9 @@ python -u run.py \
   --enc_in 30 \
   --dec_in 30 \
   --c_out 30 \
-  --batch_size 16 \
+  --batch_size 10 \
   --d_model 512 \
   --des 'Exp' \
   --itr 1 \
-  --gpu 0 \
   --learning_rate 0.001 \
   --loss 'SMAPE'

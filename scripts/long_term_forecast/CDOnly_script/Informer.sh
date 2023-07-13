@@ -29,5 +29,6 @@ python -u run.py \
   --enc_in 30 \
   --dec_in 30 \
   --c_out 30 \
+  --batch_size 10
   --des 'Exp' \
   --itr 1

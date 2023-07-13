@@ -25,6 +25,7 @@ python -u run.py \
   --enc_in 7 \
   --dec_in 7 \
   --c_out 7 \
+  --batch_size 10 \
   --gpu 1 \
   --des 'Exp' \
   --itr 1

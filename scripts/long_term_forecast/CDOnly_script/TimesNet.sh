@@ -26,6 +26,7 @@ python -u run.py \
   --dec_in 7 \
   --c_out 7 \
   --d_model 256 \
+  --batch_size 10 \
   --d_ff 512 \
   --top_k 5 \
   --gpu 1 \
