@@ -71,7 +71,7 @@ def load_data1(root_path: str, data_path: str) -> np.array:
         daty = f['mx_flt']['output']['signals']['0'][:].squeeze()
         
     print("datx.shape[1]:", datx.shape[1])
-    subset_size = int(datx.shape[1] * 0.5)  # subset size is 10 percent of the whole data
+    subset_size = int(datx.shape[1] * 0.5)  # subset size is 50 percent of the whole data
     print("subset Size:", subset_size)
     # print("datx shape:", datx.shape)
     # print("daty shape:", daty.shape)
