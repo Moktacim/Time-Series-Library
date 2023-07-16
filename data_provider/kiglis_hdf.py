@@ -51,10 +51,9 @@ def log_loaded_dataset(dataset, format, name):
             
 
 def load_data1(root_path: str, data_path: str) -> np.array:
-	"""
-	load adopted from \
-
-<<<<<<< HEAD
+    
+    """
+    load adopted from \
     Args:
         root_path (_type_): _description_
         data_path (_type_): _description_
@@ -65,21 +64,17 @@ def load_data1(root_path: str, data_path: str) -> np.array:
         https://stackoverflow.com/questions/28170623/how-to-read-hdf5-files-in-python
 
     """
-    datx, daty = [], []
+    datx, daty = [],[]
     with h5py.File(os.path.join(root_path, data_path), 'r') as f:
         datx = f['mx_flt']['input']['signals']['0'][:].squeeze()
         daty = f['mx_flt']['output']['signals']['0'][:].squeeze()
         
     print("datx.shape[1]:", datx.shape[1])
-    subset_size = int(datx.shape[1] * 0.5)  # subset size is 50 percent of the whole data
+    subset_size = int(datx.shape[1] * 0.1)  # subset size is 40 percent of the whole data/ 8% for TimesNet and Fedformer
     print("subset Size:", subset_size)
-    # print("datx shape:", datx.shape)
-    # print("daty shape:", daty.shape)
     
     X = np.asarray(datx[:,: subset_size]).transpose()  # Select the subset of the input data
     Y = np.asarray(daty[:,:subset_size]).transpose()  # Select the subset of the output data
-    # print("X shape:", X.shape)
-    # print("Y shape:", Y.shape)
     
     return X, Y
 

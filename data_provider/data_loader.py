@@ -357,6 +357,11 @@ class PositionalEncoding(nn.Module):
             x: Tensor, shape [seq_len, batch_size, embedding_dim]
         """
         x = self.pe[:x.shape[0]]
+        # """
+        # Args:
+        #     x: Tensor, shape [seq_len, embedding_dim, batch_size]
+        # """
+        # x = self.pe[:x.shape[1]]   #To fit for Informer
         return self.dropout(x)
 
 
@@ -414,12 +419,15 @@ class Dataset_Hdf5Loader(Dataset):
         gr = Y
 
         self.data_x = data[border1:border2]
+        print("self.data_x:", self.data_x.shape)
+        #self.data_x = torch.from_numpy(self.data_x).unsqueeze(1)  #To fit it with Informer: Add a batch dimension
         self.data_y = gr[border1:border2]
         # debug only 
-        # print(self.data_x.shape, self.data_y.shape)
-        print(X.shape, Y.shape) #debugging
+        #print(self.data_x.shape, self.data_y.shape)
+        #print(X.shape, Y.shape) #debugging
         self.pos_enc = PositionalEncoding(self.emsize, self.dropout, len(self.data_x))
-        self.data_stamp = self.pos_enc(self.data_x) 
+        self.data_stamp = self.pos_enc(self.data_x)
+        print("self.data_stamp:", self.data_stamp.shape)
         
         del X, Y
 
@@ -453,17 +461,26 @@ class Dataset_Hdf5Loader(Dataset):
 #         del X, Y   ]
 
     def __getitem__(self, index):
-        # batch_size, seq_len, sensor_dim
+        # batch_size, seq_len, sensor_dim/embedding_dim
         s_begin = index
         s_end = s_begin + self.seq_len
-        r_index = int((s_begin + s_end)/2)
+        r_index = int((s_begin + s_end)//2)
 
         seq_x = self.data_x[s_begin:s_end, :]
         seq_y = np.expand_dims(self.data_y[r_index, :], axis=0)
 
         x_enc = self.data_stamp[s_begin:s_end, :]
         y_enc = np.expand_dims(self.data_stamp[r_index, :], axis=0)
+        
+        # Reshape seq_x to match the expected input shape for PositionalEncoding
+        #seq_x = seq_x.unsqueeze(1)
 
+        #debug for Informer error
+        # print("seq_x:", shape.seq_x)
+        # print("seq_y:", shape.seq_y)
+        # print("x_enc:", shape.x_enc)
+        # print("y_enc:", shape.y_enc)
+        
         return seq_x, seq_y, x_enc, y_enc
 
     def __len__(self):
