@@ -106,8 +106,8 @@ if args.use_gpu and args.use_multi_gpu:
 
 #fix cuda out of memory error
 torch.cuda.empty_cache()
-device = torch.device('cuda:0')
-CUDA_LAUNCH_BLOCKING=1
+# device = torch.device('cuda:0')
+# CUDA_LAUNCH_BLOCKING=1
 
 print('Args in experiment:')
 print(args)

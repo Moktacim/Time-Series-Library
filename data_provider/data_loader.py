@@ -357,18 +357,14 @@ class PositionalEncoding(nn.Module):
             x: Tensor, shape [seq_len, batch_size, embedding_dim]
         """
         x = self.pe[:x.shape[0]]
-        # """
-        # Args:
-        #     x: Tensor, shape [seq_len, embedding_dim, batch_size]
-        # """
-        # x = self.pe[:x.shape[1]]   #To fit for Informer
+
         return self.dropout(x)
 
 
 
 class Dataset_Hdf5Loader(Dataset):
     def __init__(self, root_path, flag='train', size=None,
-                 features='MS', data_path=None, target='OT', scale=True, ws=30, timeenc=0, freq='h', seasonal_patterns=None):
+                 features='MS', data_path=None, target='OT', scale=True, ws=30, timeenc=0, freq='h', seasonal_patterns=None, n_heads=8, d_model=512):
         # remove extra params
         del features, ws, seasonal_patterns, timeenc, freq 
         [self.seq_len, self.label_len, self.pred_len] = size
@@ -381,11 +377,11 @@ class Dataset_Hdf5Loader(Dataset):
         self.scale = scale
         self.emsize = 4
         self.dropout = 0.01
+        self.n_heads = n_heads
+        self.d_model = d_model
 
         self.root_path = root_path
         self.data_path = data_path
-        #self.subset_size = subset_size
-        #self.subset_percentage = subset_percentage
         
         self.__merge_config()
         self.__read_data__()
@@ -418,47 +414,14 @@ class Dataset_Hdf5Loader(Dataset):
             data = X
         gr = Y
 
-        self.data_x = data[border1:border2]
-        print("self.data_x:", self.data_x.shape)
-        #self.data_x = torch.from_numpy(self.data_x).unsqueeze(1)  #To fit it with Informer: Add a batch dimension
+        self.data_x = data[border1:border2]       
         self.data_y = gr[border1:border2]
-        # debug only 
-        #print(self.data_x.shape, self.data_y.shape)
-        #print(X.shape, Y.shape) #debugging
         self.pos_enc = PositionalEncoding(self.emsize, self.dropout, len(self.data_x))
         self.data_stamp = self.pos_enc(self.data_x)
         print("self.data_stamp:", self.data_stamp.shape)
         
         del X, Y
 
-        
-#        [ num_train = int(possible_id * 0.7)
-#         num_test = int(possible_id * 0.2)
-#         num_vali = possible_id - num_train - num_test 
-#         logging.info(f"splitting starts... train: {num_train}, vali: {num_vali}, test: {num_test}")
-
-#         ######### 
-#         border1s = [0, num_train, num_train + num_vali -1]
-#         border2s = [num_train-1, num_train + num_vali -1,  possible_id]
-
-#         border1 = border1s[self.set_type]
-#         border2 = border2s[self.set_type]
-
-#         if self.scale:
-#             train_data = X[border1s[0]:border2s[0]]
-#             self.scaler.fit(train_data)
-#             data = self.scaler.transform(X)
-#         else:
-#             data = X
-#         gr = Y
-
-#         self.data_x = data[border1:border2]
-#         self.data_y = gr[border1:border2]
-#         # debug only 
-#         print(self.data_x.shape, self.data_y.shape)
-#         self.pos_enc = PositionalEncoding(self.emsize, self.dropout, len(self.data_x))
-#         self.data_stamp = self.pos_enc(self.data_x)
-#         del X, Y   ]
 
     def __getitem__(self, index):
         # batch_size, seq_len, sensor_dim/embedding_dim
@@ -470,16 +433,11 @@ class Dataset_Hdf5Loader(Dataset):
         seq_y = np.expand_dims(self.data_y[r_index, :], axis=0)
 
         x_enc = self.data_stamp[s_begin:s_end, :]
-        y_enc = np.expand_dims(self.data_stamp[r_index, :], axis=0)
         
-        # Reshape seq_x to match the expected input shape for PositionalEncoding
-        #seq_x = seq_x.unsqueeze(1)
-
-        #debug for Informer error
-        # print("seq_x:", shape.seq_x)
-        # print("seq_y:", shape.seq_y)
-        # print("x_enc:", shape.x_enc)
-        # print("y_enc:", shape.y_enc)
+        # Reshape x_enc to have the shape [S, H, D]
+        # x_enc = x_enc.view(self.seq_len, self.n_heads, self.d_model)
+        
+        y_enc = np.expand_dims(self.data_stamp[r_index, :], axis=0)
         
         return seq_x, seq_y, x_enc, y_enc
 

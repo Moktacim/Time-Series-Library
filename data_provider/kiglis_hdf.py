@@ -70,7 +70,7 @@ def load_data1(root_path: str, data_path: str) -> np.array:
         daty = f['mx_flt']['output']['signals']['0'][:].squeeze()
         
     print("datx.shape[1]:", datx.shape[1])
-    subset_size = int(datx.shape[1] * 0.1)  # subset size is 40 percent of the whole data/ 8% for TimesNet and Fedformer
+    subset_size = int(datx.shape[1] * 1.0)  # subset size 
     print("subset Size:", subset_size)
     
     X = np.asarray(datx[:,: subset_size]).transpose()  # Select the subset of the input data
