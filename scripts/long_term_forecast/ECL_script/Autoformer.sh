@@ -8,7 +8,7 @@ python -u run.py \
   --root_path ./dataset/electricity/ \
   --data_path electricity.csv \
   --model_id ECL_96_96 \
-  --model $model_name \
+  --model Autoformer \
   --data custom \
   --features M \
   --seq_len 96 \

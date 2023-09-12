@@ -6,7 +6,7 @@ from layers.AutoCorrelation import AutoCorrelation, AutoCorrelationLayer
 from layers.Autoformer_EncDec import Encoder, Decoder, EncoderLayer, DecoderLayer, my_Layernorm, series_decomp
 import math
 import numpy as np
-
+import matplotlib.pyplot as plt 
 
 class Model(nn.Module):
     """

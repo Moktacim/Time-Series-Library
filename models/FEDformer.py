@@ -159,6 +159,12 @@ class Model(nn.Module):
     def short_forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec,
             enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
         # decomp init
+        import matplotlib.pyplot as plt 
+        plt.figure()
+        plt.plot(x_enc[0,:,0].cpu().detach().numpy())
+        plt.plot(x_mark_enc[0,:,0].cpu().detach().numpy())
+        plt.savefig('fedformer ecf.png')
+        import sys; sys.exit(0)
         mean = torch.mean(x_enc, dim=1).unsqueeze(1).repeat(1, self.pred_len, 1)
         seasonal_init, trend_init = self.decomp(x_enc)
         # decoder input

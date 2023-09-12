@@ -8,7 +8,7 @@ python -u run.py \
   --root_path ./dataset/electricity/ \
   --data_path electricity.csv \
   --model_id ECL_96_96 \
-  --model $model_name \
+  --model Fedformer \
   --data custom \
   --features M \
   --seq_len 96 \
@@ -85,3 +85,12 @@ python -u run.py \
   --c_out 321 \
   --des 'Exp' \
   --itr 1
+
+
+
+        # import matplotlib.pyplot as plt 
+        # plt.figure()
+        # plt.plot(x_enc[0,:,0].cpu().detach().numpy())
+        # plt.plot(x_mark_enc[0,:,0].cpu().detach().numpy())
+        # plt.savefig('fedformer ecf.png')
+        # import sys; sys.exit(0)
