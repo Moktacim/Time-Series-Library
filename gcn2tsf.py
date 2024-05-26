@@ -8,7 +8,7 @@ from sklearn.metrics import mean_squared_error
 color_pal = sns.color_palette()
 plt.style.use('fivethirtyeight')
 
-df = pd.read_csv(r'C:\Users\hi tech\PycharmProjects\Test_projects\PJME_hourly.csv\PJME_hourly.csv')
+df = pd.read_csv(r'C:\Users\hi tech\PycharmProjects\Test_projects\wind_onshore.csv')
 df = df.set_index('Datetime')
 df.index = pd.to_datetime(df.index)
 
